@@ -27,7 +27,7 @@ const Navigation = () => {
   const isOwner = location.pathname.includes('/venue-owner');
 
   const customerNavItems = [
-    { name: 'Home', path: '/', icon: Home },
+    { name: 'Home', path: '/home', icon: Home },
     { name: 'Explore', path: '/explore', icon: Compass },
     { name: 'Venues', path: '/venues', icon: Building2 },
     { name: 'My Bookings', path: '/bookings', icon: Calendar },
@@ -49,7 +49,7 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-3xl font-heading text-brand-burgundy">Eddy</span>
+            <span className="text-2xl font-heading text-brand-burgundy">Eddy</span>
           </Link>
 
           {/* Desktop Navigation */}
