@@ -1,118 +1,78 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
-import { getVenueById } from '@/data/clubData';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import { useAuth } from '../contexts/AuthContext';
+import { userApi, savedVenuesApi, bookingsApi } from '../lib/api';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
+import { Heart, Calendar, Settings } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { CardElement, useStripe, useElements, Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe('pk_test_...'); // Replace with your real publishable key
 
 const UserProfilePage = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [user, setUser] = useState(null);
+  const { user, signIn, signUp, signOut } = useAuth();
+  const [isSignup, setIsSignup] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ email: '', password: '', confirm: '' });
-  const [error, setError] = useState('');
-  const [signupError, setSignupError] = useState('');
-  const [isSignup, setIsSignup] = useState(false);
-  const [loyaltyPoints, setLoyaltyPoints] = useState(0);
-  const [bookings, setBookings] = useState([]);
+  const [error, setError] = useState(null);
+  const [signupError, setSignupError] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [savedVenues, setSavedVenues] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '' });
+  const [bookings, setBookings] = useState([]);
 
+  // Load user data when logged in
   useEffect(() => {
-    // Load data from localStorage
-    const storedPoints = localStorage.getItem('lagosvibe_loyalty_points');
-    if (storedPoints) setLoyaltyPoints(parseInt(storedPoints));
-
-    const storedBookings = JSON.parse(localStorage.getItem('lagosvibe_user_bookings') || '[]');
-    setBookings(storedBookings.sort((a,b) => new Date(b.bookingTimestamp) - new Date(a.bookingTimestamp)));
-
-    const favoriteIds = JSON.parse(localStorage.getItem('lagosvibe_favorites') || '[]');
-    const favoriteVenues = favoriteIds.map(id => getVenueById(id)).filter(Boolean);
-    setSavedVenues(favoriteVenues);
-    
-    // Load user details if any (mock, in real app this is from auth)
-    const storedUser = JSON.parse(localStorage.getItem('lagosvibe_user_details'));
-    if(storedUser) {
-      setUser(prev => ({...prev, ...storedUser}));
-      setEditForm(prev => ({...prev, ...storedUser}));
+    if (user) {
+      loadUserData();
     }
-  }, []);
+  }, [user]);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const loadUserData = async () => {
+    try {
+      // Load profile
+      const profileData = await userApi.getProfile(user.id);
+      setProfile(profileData);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const users = JSON.parse(localStorage.getItem('users') || '{}');
-    if (users[form.email] && users[form.email] === form.password) {
-      setUser({ email: form.email });
-      setError('');
-    } else {
-      setError('Invalid email or password');
+      // Load saved venues
+      const venuesData = await savedVenuesApi.getSavedVenues(user.id);
+      setSavedVenues(venuesData);
+
+      // Load bookings
+      const bookingsData = await bookingsApi.getUserBookings(user.id);
+      setBookings(bookingsData);
+    } catch (error) {
+      console.error('Error loading user data:', error);
     }
   };
 
-  const handleSignup = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (!signupForm.email || !signupForm.password) {
-      setSignupError('All fields are required');
-      return;
+    try {
+      const { error } = await signIn(form);
+      if (error) throw error;
+    } catch (error) {
+      setError(error.message);
     }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
     if (signupForm.password !== signupForm.confirm) {
       setSignupError('Passwords do not match');
       return;
     }
-    const users = JSON.parse(localStorage.getItem('users') || '{}');
-    if (users[signupForm.email]) {
-      setSignupError('User already exists');
-      return;
+    try {
+      const { error } = await signUp({
+        email: signupForm.email,
+        password: signupForm.password,
+      });
+      if (error) throw error;
+    } catch (error) {
+      setSignupError(error.message);
     }
-    users[signupForm.email] = signupForm.password;
-    localStorage.setItem('users', JSON.stringify(users));
-    setUser({ email: signupForm.email });
-    setSignupError('');
-    setIsSignup(false);
   };
-
-  const handleLogout = () => {
-    setUser(null);
-    setForm({ email: '', password: '' });
-    localStorage.removeItem('lagosvibe_user_details');
-    localStorage.removeItem('lagosvibe_loyalty_points');
-    toast({ title: "Logged Out", description: "You have been successfully logged out.", className: "bg-brand-burgundy text-brand-cream"});
-    navigate('/');
-  };
-
-  const handleEditChange = (e) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
-  };
-
-  const handleSaveProfile = () => {
-    setUser({ ...user, ...editForm });
-    localStorage.setItem('lagosvibe_user_details', JSON.stringify({ ...user, ...editForm }));
-    setIsEditing(false);
-    toast({ title: "Profile Updated", description: "Your details have been saved.", className: "bg-brand-gold text-brand-burgundy" });
-  };
-
-  const copyReferralCode = () => {
-    navigator.clipboard.writeText(user.referralCode);
-    toast({ title: "Referral Code Copied!", description: "Share it with friends to earn rewards.", className: "bg-brand-gold text-brand-burgundy" });
-  };
-  
-  const getLoyaltyTier = () => {
-    if (loyaltyPoints >= 3000) return { name: 'Platinum Pulse', color: 'text-purple-500'};
-    if (loyaltyPoints >= 1500) return { name: 'Gold Glow', color: 'text-yellow-400'};
-    if (loyaltyPoints >= 500) return { name: 'Silver Spark', color: 'text-gray-400'};
-    return { name: 'Bronze Vibe', color: 'text-yellow-600'};
-  };
-  const loyaltyTier = getLoyaltyTier();
 
   if (!user) {
     return (
@@ -200,101 +160,327 @@ const UserProfilePage = () => {
     );
   }
 
-  // Show profile if logged in
   return (
-    <div className="bg-brand-cream/50 min-h-screen py-10 md:py-16 font-body">
-      <Card className="max-w-md mx-auto mt-16">
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <Avatar>
-              <AvatarImage src={user.avatar} />
-              <AvatarFallback>{user.email[0].toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle>Welcome, {user.email}!</CardTitle>
-              <CardDescription>Manage your profile and preferences</CardDescription>
-              <Badge variant="secondary" className="mt-2">{loyaltyTier.name}</Badge>
-            </div>
+    <div className="bg-brand-cream/50 min-h-screen">
+      <div className="container py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-heading text-brand-burgundy mb-2">My Profile</h1>
+            <p className="text-brand-burgundy/70">Manage your account and preferences</p>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <Label htmlFor="email">Email</Label>
-              <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
-                {isEditing ? 'Cancel' : 'Edit Profile'}
-              </Button>
-            </div>
-            {isEditing ? (
-              <div className="space-y-2">
-                <Input
-                  name="name"
-                  placeholder="Name"
-                  value={editForm.name}
-                  onChange={handleEditChange}
-                />
-                <Input
-                  name="phone"
-                  placeholder="Phone"
-                  value={editForm.phone}
-                  onChange={handleEditChange}
-                />
-                <Button onClick={handleSaveProfile}>Save Changes</Button>
+          <Button 
+            onClick={signOut}
+            variant="outline" 
+            className="border-brand-burgundy text-brand-burgundy hover:bg-brand-burgundy/10"
+          >
+            Sign Out
+                </Button>
               </div>
-            ) : (
-              <Input id="email" value={user.email} disabled />
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Recent Bookings</Label>
-            {bookings.length > 0 ? (
-              <div className="space-y-2">
-                {bookings.slice(0, 3).map((booking, index) => (
-                  <div key={index} className="p-2 border rounded">
-                    <div className="font-medium">{booking.venueName}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {new Date(booking.date).toLocaleDateString()}
+
+        <Tabs defaultValue="profile" className="space-y-4">
+          <TabsList className="bg-white p-1 rounded-lg border border-brand-burgundy/10">
+            <TabsTrigger value="profile" className="data-[state=active]:bg-brand-gold data-[state=active]:text-brand-burgundy">
+              <Settings className="h-4 w-4 mr-2" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="saved" className="data-[state=active]:bg-brand-gold data-[state=active]:text-brand-burgundy">
+              <Heart className="h-4 w-4 mr-2" />
+              Saved Venues
+            </TabsTrigger>
+            <TabsTrigger value="bookings" className="data-[state=active]:bg-brand-gold data-[state=active]:text-brand-burgundy">
+              <Calendar className="h-4 w-4 mr-2" />
+              My Bookings
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="data-[state=active]:bg-brand-gold data-[state=active]:text-brand-burgundy">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile">
+            <Card className="bg-white border-brand-burgundy/10">
+              <div className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
+                {profile ? (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-brand-burgundy/70">Email</label>
+                      <p className="mt-1">{user.email}</p>
+            </div>
+                  <div>
+                      <label className="block text-sm font-medium text-brand-burgundy/70">Name</label>
+                      <p className="mt-1">{profile.first_name} {profile.last_name}</p>
+                  </div>
+                  <div>
+                      <label className="block text-sm font-medium text-brand-burgundy/70">Phone</label>
+                      <p className="mt-1">{profile.phone_number || 'Not set'}</p>
+                  </div>
+                  </div>
+                ) : (
+                  <p>Loading profile...</p>
+                )}
+                </div>
+          </Card>
+          </TabsContent>
+
+          <TabsContent value="saved">
+            <Card className="bg-white border-brand-burgundy/10">
+              <div className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Saved Venues</h2>
+                {savedVenues.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {savedVenues.map((saved) => (
+                      <Card key={saved.id} className="p-4">
+                        <h3 className="font-semibold">{saved.venues.name}</h3>
+                        <p className="text-sm text-brand-burgundy/70">{saved.venues.type}</p>
+                        <Button
+                          onClick={() => savedVenuesApi.removeSavedVenue(user.id, saved.venue_id)}
+                          variant="outline"
+                          className="mt-2 text-red-500 border-red-500 hover:bg-red-50"
+                        >
+                          Remove
+                        </Button>
+              </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <p>No saved venues yet</p>
+                )}
+              </div>
+              </Card>
+          </TabsContent>
+
+          <TabsContent value="bookings">
+            <Card className="bg-white border-brand-burgundy/10">
+              <div className="p-6">
+                <h2 className="text-xl font-semibold mb-4">My Bookings</h2>
+                  {bookings.length > 0 ? (
+                  <div className="space-y-4">
+                    {bookings.map((booking) => (
+                      <Card key={booking.id} className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                            <h3 className="font-semibold">{booking.venues.name}</h3>
+                            <p className="text-sm text-brand-burgundy/70">
+                              {new Date(booking.booking_date).toLocaleDateString()} at {booking.start_time}
+                            </p>
+                            <p className="text-sm text-brand-burgundy/70">
+                              {booking.number_of_guests} guests
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-brand-burgundy">
+                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                            </p>
+                            {booking.status === 'confirmed' && (
+                              <Button
+                                onClick={() => bookingsApi.cancelBooking(booking.id)}
+                                variant="outline"
+                                className="mt-2 text-red-500 border-red-500 hover:bg-red-50"
+                              >
+                                Cancel
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                      ))}
                     </div>
-                  </div>
-                ))}
+                  ) : (
+                  <p>No bookings yet</p>
+                  )}
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No bookings yet</p>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Saved Venues</Label>
-            {savedVenues.length > 0 ? (
-              <div className="space-y-2">
-                {savedVenues.map((venue) => (
-                  <div key={venue.id} className="p-2 border rounded">
-                    <div className="font-medium">{venue.name}</div>
-                    <div className="text-sm text-muted-foreground">{venue.location}</div>
+              </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card className="bg-white border-brand-burgundy/10">
+              <div className="p-6 space-y-10">
+                {/* Change Password Section */}
+                <div className="space-y-2 pb-8 border-b border-brand-burgundy/10">
+                  <h2 className="text-xl font-semibold mb-2">Change Password</h2>
+                  <ChangePasswordForm user={user} />
+                </div>
+                {/* Payment Details Section */}
+                <Elements stripe={stripePromise}>
+                  <div className="space-y-2 pb-8 border-b border-brand-burgundy/10">
+                    <PaymentDetailsSection user={user} />
                   </div>
-                ))}
+                </Elements>
+                {/* Referral Codes Section */}
+                <div className="space-y-2">
+                  <h2 className="text-xl font-semibold mb-2">Referral Codes</h2>
+                  <ReferralCodesSection user={user} />
+                </div>
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No saved venues yet</p>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Referral Code</Label>
-            <div className="flex gap-2">
-              <Input value={user.referralCode || 'VIP123'} disabled />
-              <Button onClick={copyReferralCode} variant="outline">
-                Copy
-              </Button>
-            </div>
-          </div>
-          
-          <Button onClick={handleLogout} variant="outline">Logout</Button>
-        </CardContent>
-      </Card>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };
+
+function ChangePasswordForm({ user }) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError('All fields are required.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match.');
+      return;
+    }
+    setLoading(true);
+    try {
+      // Re-authenticate user
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      if (signInError) throw signInError;
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) throw updateError;
+      // Send password reset email
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(user.email);
+      if (resetError) throw resetError;
+      setSuccess('Password updated and reset email sent!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      setError(err.message || 'Failed to update password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+      <div>
+        <label className="block text-sm font-medium text-brand-burgundy/70">Current Password</label>
+        <input
+          type="password"
+          className="w-full border p-2 rounded bg-white"
+          value={currentPassword}
+          onChange={e => setCurrentPassword(e.target.value)}
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-brand-burgundy/70">New Password</label>
+        <input
+          type="password"
+          className="w-full border p-2 rounded bg-white"
+          value={newPassword}
+          onChange={e => setNewPassword(e.target.value)}
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-brand-burgundy/70">Confirm New Password</label>
+        <input
+          type="password"
+          className="w-full border p-2 rounded bg-white"
+          value={confirmPassword}
+          onChange={e => setConfirmPassword(e.target.value)}
+          required
+        />
+      </div>
+      {error && <div className="text-red-500">{error}</div>}
+      {success && <div className="text-green-600">{success}</div>}
+      <button
+        type="submit"
+        className="bg-brand-gold text-brand-burgundy px-4 py-2 rounded hover:bg-brand-gold/90"
+        disabled={loading}
+      >
+        {loading ? 'Updating...' : 'Change Password'}
+      </button>
+    </form>
+  );
+}
+
+function PaymentDetailsSection({ user }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // You will need to create a SetupIntent on your backend and fetch the clientSecret here
+  // For now, this is a placeholder
+  const clientSecret = null; // TODO: Fetch from your backend
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setLoading(true);
+
+    if (!stripe || !elements) {
+      setMessage('Stripe is not loaded');
+      setLoading(false);
+      return;
+    }
+
+    // Confirm card setup (save card for future use)
+    const result = await stripe.confirmCardSetup(clientSecret, {
+      payment_method: {
+        card: elements.getElement(CardElement),
+        billing_details: {
+          email: user.email,
+        },
+      },
+    });
+
+    if (result.error) {
+      setMessage(result.error.message);
+    } else {
+      setMessage('Payment method saved!');
+      // Optionally, refresh the list of saved payment methods here
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-2">Payment Details</h2>
+      <p className="text-brand-burgundy/70 mb-2">
+        Your card details are processed securely by Stripe and never touch our servers. You can remove your payment method at any time.
+      </p>
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+        <CardElement options={{ hidePostalCode: true }} />
+        <button
+          type="submit"
+          className="bg-brand-gold text-brand-burgundy px-4 py-2 rounded hover:bg-brand-gold/90"
+          disabled={!stripe || loading}
+        >
+          {loading ? 'Saving...' : 'Save Payment Method'}
+        </button>
+        {message && <div className="mt-2 text-brand-burgundy">{message}</div>}
+      </form>
+      {/* TODO: List and allow removal of saved payment methods */}
+      <div className="mt-4 text-xs text-brand-burgundy/60">
+        We comply with GDPR. Your payment data is handled by Stripe and you may request deletion at any time.
+      </div>
+    </div>
+  );
+}
+
+function ReferralCodesSection({ user }) {
+  // Implementation of ReferralCodesSection component
+  return (
+    <p>Referral Codes Section</p>
+  );
+}
 
 export default UserProfilePage;
