@@ -64,7 +64,7 @@ const VenueDetailPage = () => {
     };
     
     localStorage.setItem('lagosvibe_booking_selection', JSON.stringify(bookingSelection));
-    navigate(`/booking/${venue.id}`);
+    navigate(`/checkout/${venue.id}`);
   };
 
   const toggleFavorite = () => {

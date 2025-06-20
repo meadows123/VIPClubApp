@@ -41,7 +41,7 @@ export const allVenuesData = [
     description: 'A chic restaurant and lounge offering a sophisticated dining experience.',
     rating: 4.8,
     location: 'Victoria Island',
-    venueType: 'Restaurant & Lounge',
+    venueType: 'Restaurant',
     images: ['rsvp lagos restaurant interior', 'rsvp lagos poolside lounge'],
     isFeatured: true,
     tickets: [
@@ -137,7 +137,7 @@ export const getLagosLocations = () => {
 export const getUkCities = getLagosLocations;
 
 export const getVenueTypes = () => {
-  return ['all', ...new Set(allVenuesData.map(venue => venue.venueType))].sort();
+  return ['all', 'Restaurant', 'Club', 'Lounge'];
 };
 
 export const getMusicGenres = () => {

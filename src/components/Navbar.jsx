@@ -9,7 +9,7 @@ const Navbar = () => {
   const location = useLocation();
 
   const navLinks = [
-    { name: 'Home', path: '/', icon: <Home className="h-4 w-4 mr-1" /> },
+    { name: 'Home', path: '/home', icon: <Home className="h-4 w-4 mr-1" /> },
     { name: 'Venues', path: '/venues', icon: <MapPin className="h-4 w-4 mr-1" /> },
     { name: 'Explore', path: '/explore', icon: <Compass className="h-4 w-4 mr-1" /> },
     { name: 'Events', path: '/events', icon: <CalendarDays className="h-4 w-4 mr-1" /> },
@@ -30,7 +30,7 @@ const Navbar = () => {
             transition={{ duration: 0.5 }}
             className="font-heading font-bold text-3xl tracking-tight text-brand-burgundy"
           >
-            LagosVibe
+            Eddy
           </motion.div>
         </Link>
 

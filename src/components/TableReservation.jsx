@@ -6,21 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 
-const TableReservation = ({ clubId, onReserve }) => {
+const TableReservation = ({ clubId, tables, onReserve, selectedTableId }) => {
   const { toast } = useToast();
   const [selectedTable, setSelectedTable] = useState(null);
   const [guestCount, setGuestCount] = useState(4);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  
-  const tables = [
-    { id: 1, name: 'Standard', capacity: '1-4', price: 300 },
-    { id: 2, name: 'Premium', capacity: '4-8', price: 500 },
-    { id: 3, name: 'VIP', capacity: '6-10', price: 800 },
-    { id: 4, name: 'Ultra VIP', capacity: '10-15', price: 1200 },
-    { id: 5, name: 'Platinum', capacity: '15-20', price: 2000 },
-    { id: 6, name: 'Owner\'s Booth', capacity: '20+', price: 3500 },
-  ];
   
   const handleTableSelect = (table) => {
     setSelectedTable(table);
@@ -37,8 +28,8 @@ const TableReservation = ({ clubId, onReserve }) => {
     }
     
     onReserve({
-      tableId: selectedTable.id,
-      tableName: selectedTable.name,
+      id: selectedTable.id,
+      name: selectedTable.name,
       price: selectedTable.price,
       date,
       time,
@@ -52,40 +43,40 @@ const TableReservation = ({ clubId, onReserve }) => {
   };
   
   return (
-    <div className="bg-secondary/20 border border-border/50 rounded-lg p-6">
-      <h3 className="text-xl font-bold mb-6">Reserve a Table</h3>
-      
-      <div className="mb-6">
-        <Label htmlFor="date" className="mb-2 block">Date</Label>
-        <div className="relative">
-          <Input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="pl-10"
-            min={new Date().toISOString().split('T')[0]}
-          />
-          <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="date" className="text-brand-burgundy mb-2 block">Date</Label>
+          <div className="relative">
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="pl-10 bg-brand-cream/50 border-brand-burgundy/30 focus:border-brand-burgundy"
+              min={new Date().toISOString().split('T')[0]}
+            />
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-brand-burgundy/50" />
+          </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="time" className="text-brand-burgundy mb-2 block">Time</Label>
+          <div className="relative">
+            <Input
+              id="time"
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="pl-10 bg-brand-cream/50 border-brand-burgundy/30 focus:border-brand-burgundy"
+            />
+            <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-brand-burgundy/50" />
+          </div>
         </div>
       </div>
       
-      <div className="mb-6">
-        <Label htmlFor="time" className="mb-2 block">Time</Label>
-        <div className="relative">
-          <Input
-            id="time"
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            className="pl-10"
-          />
-          <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        </div>
-      </div>
-      
-      <div className="mb-6">
-        <Label htmlFor="guests" className="mb-2 block">Number of Guests</Label>
+      <div>
+        <Label htmlFor="guests" className="text-brand-burgundy mb-2 block">Number of Guests</Label>
         <div className="relative">
           <Input
             id="guests"
@@ -94,14 +85,14 @@ const TableReservation = ({ clubId, onReserve }) => {
             max="30"
             value={guestCount}
             onChange={(e) => setGuestCount(parseInt(e.target.value))}
-            className="pl-10"
+            className="pl-10 bg-brand-cream/50 border-brand-burgundy/30 focus:border-brand-burgundy"
           />
-          <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-brand-burgundy/50" />
         </div>
       </div>
       
-      <div className="mb-6">
-        <Label className="mb-3 block">Select a Table</Label>
+      <div>
+        <Label className="text-brand-burgundy mb-3 block">Select a Table</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {tables.map((table) => (
             <motion.div
@@ -109,15 +100,15 @@ const TableReservation = ({ clubId, onReserve }) => {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleTableSelect(table)}
-              className={`table-item cursor-pointer p-4 rounded-lg border ${
+              className={`table-item cursor-pointer p-4 rounded-lg border transition-colors ${
                 selectedTable?.id === table.id
-                  ? 'border-primary bg-primary/20 neon-border'
-                  : 'border-border/50 bg-secondary/30'
+                  ? 'border-brand-burgundy bg-brand-cream text-brand-burgundy'
+                  : 'border-brand-burgundy/30 bg-brand-cream/50 text-brand-burgundy/70 hover:border-brand-burgundy/50'
               }`}
             >
               <h4 className="font-medium text-sm">{table.name}</h4>
-              <p className="text-xs text-muted-foreground mb-2">Fits {table.capacity} people</p>
-              <p className="text-sm font-bold">${table.price}</p>
+              <p className="text-xs text-brand-burgundy/70 mb-2">Fits {table.capacity} people</p>
+              <p className="text-sm font-bold">₦{table.price.toLocaleString()}</p>
             </motion.div>
           ))}
         </div>
@@ -126,9 +117,13 @@ const TableReservation = ({ clubId, onReserve }) => {
       <Button 
         onClick={handleReserve} 
         disabled={!selectedTable || !date || !time}
-        className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity text-accent-foreground"
+        className={`w-full ${
+          selectedTable 
+            ? 'bg-brand-burgundy text-brand-cream hover:bg-brand-burgundy/90' 
+            : 'bg-brand-cream/50 text-brand-burgundy/50 cursor-not-allowed'
+        }`}
       >
-        {selectedTable ? `Reserve ${selectedTable.name} Table - $${selectedTable.price}` : 'Select a Table'}
+        {selectedTable ? `Reserve ${selectedTable.name} Table - ₦${selectedTable.price.toLocaleString()}` : 'Select a Table'}
       </Button>
     </div>
   );

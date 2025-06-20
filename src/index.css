@@ -4,48 +4,48 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    --background: 40 33% 97%;
+    --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-    --primary: 0 100% 25%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 35 45% 60%;
-    --secondary-foreground: 0 0% 10%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 35 45% 60%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 0 100% 25%;
+    --ring: 0 0% 3.9%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
   }
 }
 
@@ -54,7 +54,19 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-brand-cream text-brand-burgundy;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-brand-burgundy;
+  }
+  p {
+    @apply text-brand-burgundy/80;
+  }
+  a {
+    @apply text-brand-burgundy-light hover:text-brand-burgundy transition-colors;
+  }
+  button {
+    @apply transition-colors;
   }
 }
 
@@ -70,11 +82,43 @@
   .text-shadow-glow {
     text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
   }
+
+  .venue-card {
+    @apply bg-white rounded-xl shadow-lg border border-brand-burgundy/10 transition-all duration-300;
+  }
+
+  .venue-card:hover {
+    @apply transform -translate-y-1 shadow-xl border-brand-burgundy-light;
+  }
+
+  .table-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4;
+  }
+
+  .table-item {
+    @apply aspect-square rounded-lg border-2 border-brand-burgundy/20 bg-white transition-all duration-300;
+  }
+
+  .table-item:hover:not(.table-item-selected) {
+    @apply transform scale-105 border-brand-burgundy-light;
+  }
+
+  .table-item-selected {
+    @apply border-brand-burgundy bg-brand-burgundy/5 shadow-lg;
+  }
+
+  .glass-effect-cream {
+    @apply bg-white/70 backdrop-blur-md border border-brand-burgundy/10;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .hero-gradient {
+    @apply bg-gradient-to-r from-brand-burgundy to-brand-burgundy-light;
   }
 }
 
@@ -132,58 +176,14 @@
   @apply border-secondary text-secondary hover:bg-secondary/10 hover:text-accent;
 }
 
-.hero-gradient {
-  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--secondary)));
-}
-
-.venue-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  @apply bg-card border-border/60;
-}
-
-.venue-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px -5px hsla(var(--primary), 0.15), 0 6px 6px -5px hsla(var(--secondary), 0.1);
-  @apply border-secondary;
-}
-
 .glow-text-gold {
   text-shadow: 0 0 8px hsl(var(--secondary)/ 0.7), 0 0 16px hsl(var(--secondary)/ 0.5);
   @apply text-secondary;
 }
 
-.table-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-}
-
-.table-item {
-  aspect-ratio: 1/1;
-  transition: all 0.3s ease;
-  @apply border-border bg-card/80;
-}
-
-.table-item:hover:not(.table-item-selected) {
-  transform: scale(1.05);
-  border-color: hsl(var(--accent));
-}
-
-.table-item-selected {
-  border: 2px solid hsl(var(--accent));
-  box-shadow: 0 0 10px hsl(var(--accent)/0.7);
-  background-color: hsl(var(--accent)/0.1);
-}
-
 .neon-border-gold {
   box-shadow: 0 0 5px hsl(var(--secondary)), 
               0 0 10px hsl(var(--secondary)/0.7);
-}
-
-.glass-effect-cream {
-  background: hsla(var(--card), 0.7);
-  backdrop-filter: blur(8px);
-  border: 1px solid hsla(var(--border), 0.7);
 }
 
 /* Button specific styles for Burgundy/Gold */

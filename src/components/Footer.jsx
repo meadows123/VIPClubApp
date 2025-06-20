@@ -8,50 +8,74 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-brand-burgundy text-brand-cream border-t border-brand-gold/20">
-      <div className="container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-          <div className="md:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <Wine className="h-8 w-8 text-brand-gold" />
-              <span className="font-heading font-bold text-3xl tracking-tight text-brand-cream">
-                LagosVibe
-              </span>
-            </Link>
-            <p className="text-sm text-brand-cream/80 max-w-md">
-              Your exclusive passport to Lagos's elite nightlife. Discover premium venues, book VIP tables, and RSVP to the city's most sought-after events.
-            </p>
-          </div>
-
+    <footer className="bg-brand-burgundy text-brand-cream py-12">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <p className="font-heading font-semibold text-xl text-brand-gold mb-4">Navigate</p>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/venues" className="text-brand-cream/80 hover:text-brand-gold transition-colors">Venues</Link></li>
-              <li><Link to="/explore" className="text-brand-cream/80 hover:text-brand-gold transition-colors">Explore Lagos</Link></li>
-              <li><Link to="/events" className="text-brand-cream/80 hover:text-brand-gold transition-colors">Upcoming Events</Link></li>
-              <li><Link to="/profile" className="text-brand-cream/80 hover:text-brand-gold transition-colors">My Profile</Link></li>
-              <li><Link to="/loyalty" className="text-brand-cream/80 hover:text-brand-gold transition-colors">Loyalty Rewards</Link></li>
+            <h3 className="text-xl font-heading font-bold mb-4 text-white">Eddy</h3>
+            <p className="text-brand-cream/80 mb-4">
+              Your premier destination for exclusive venue bookings in Lagos.
+            </p>
+            <div className="flex gap-4">
+              <a 
+                href="https://facebook.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-brand-cream/80 hover:text-white transition-colors"
+              >
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-brand-cream/80 hover:text-white transition-colors"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://tiktok.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-brand-cream/80 hover:text-white transition-colors"
+              >
+                <svg 
+                  className="w-5 h-5" 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor"
+                >
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-lg font-semibold mb-4 text-white">Quick Links</h4>
+            <ul className="space-y-2">
+              <li><Link to="/venues" className="text-brand-cream/80 hover:text-white">Venues</Link></li>
+              <li><Link to="/about" className="text-brand-cream/80 hover:text-white">About Us</Link></li>
+              <li><Link to="/contact" className="text-brand-cream/80 hover:text-white">Contact</Link></li>
             </ul>
           </div>
-
           <div>
-            <p className="font-heading font-semibold text-xl text-brand-gold mb-4">Connect</p>
-            <div className="flex space-x-4 mb-4">
-              <a href="#" target="_blank" rel="noopener noreferrer" className="text-brand-cream/80 hover:text-brand-gold transition-colors"><Facebook size={22} /></a>
-              <a href="#" target="_blank" rel="noopener noreferrer" className="text-brand-cream/80 hover:text-brand-gold transition-colors"><Instagram size={22} /></a>
-              <a href="#" target="_blank" rel="noopener noreferrer" className="text-brand-cream/80 hover:text-brand-gold transition-colors"><Twitter size={22} /></a>
-            </div>
-            <p className="font-heading font-semibold text-xl text-brand-gold mb-2 mt-4">Support</p>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/contact" className="text-brand-cream/80 hover:text-brand-gold transition-colors">Contact Us</Link></li>
+            <h4 className="text-lg font-semibold mb-4 text-white">For Venues</h4>
+            <ul className="space-y-2">
+              <li><Link to="/venue-owner/login" className="text-brand-cream/80 hover:text-white">Login</Link></li>
+              <li><Link to="/venue-owner/register" className="text-brand-cream/80 hover:text-white">Register</Link></li>
+              <li><Link to="/venue-owner/features" className="text-brand-cream/80 hover:text-white">Features</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-lg font-semibold mb-4 text-white">Legal</h4>
+            <ul className="space-y-2">
+              <li><Link to="/privacy" className="text-brand-cream/80 hover:text-white">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="text-brand-cream/80 hover:text-white">Terms of Service</Link></li>
+              <li><Link to="/faq" className="text-brand-cream/80 hover:text-white">FAQ</Link></li>
             </ul>
           </div>
         </div>
-
-        <div className="border-t border-brand-cream/20 pt-8 text-center">
-          <p className="text-xs text-brand-cream/70">
-            &copy; {currentYear} LagosVibe Ltd. All rights reserved. Experience the Best of Lagos.
-          </p>
+        <div className="border-t border-brand-cream/10 mt-8 pt-8 text-center text-brand-cream/60">
+          <p>&copy; {currentYear} VIP Club. All rights reserved.</p>
         </div>
       </div>
     </footer>

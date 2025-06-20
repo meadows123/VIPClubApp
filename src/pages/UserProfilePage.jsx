@@ -116,77 +116,93 @@ const UserProfilePage = () => {
 
   if (!user) {
     return (
-      <div className="max-w-md mx-auto mt-16 p-8 bg-white rounded shadow">
-        <h2 className="text-2xl font-bold mb-4">{isSignup ? 'Sign Up' : 'Login to your profile'}</h2>
-        {isSignup ? (
-          <form onSubmit={handleSignup} className="space-y-4">
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={signupForm.email}
-              onChange={e => setSignupForm({ ...signupForm, email: e.target.value })}
-              className="w-full border p-2 rounded"
-              required
-            />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={signupForm.password}
-              onChange={e => setSignupForm({ ...signupForm, password: e.target.value })}
-              className="w-full border p-2 rounded"
-              required
-            />
-            <input
-              type="password"
-              name="confirm"
-              placeholder="Confirm Password"
-              value={signupForm.confirm}
-              onChange={e => setSignupForm({ ...signupForm, confirm: e.target.value })}
-              className="w-full border p-2 rounded"
-              required
-            />
-            {signupError && <div className="text-red-500">{signupError}</div>}
-            <Button type="submit" className="w-full bg-brand-burgundy text-white">Sign Up</Button>
-            <Button type="button" variant="ghost" className="w-full text-brand-burgundy mt-2" onClick={() => setIsSignup(false)}>
-              Already have an account? Log In
-            </Button>
-          </form>
-        ) : (
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={e => setForm({ ...form, [e.target.name]: e.target.value })}
-              className="w-full border p-2 rounded"
-              required
-            />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={e => setForm({ ...form, [e.target.name]: e.target.value })}
-              className="w-full border p-2 rounded"
-              required
-            />
-            {error && <div className="text-red-500">{error}</div>}
-            <Button type="submit" className="w-full bg-brand-burgundy text-white">Login</Button>
-            <Button type="button" className="w-full text-brand-burgundy mt-2" onClick={() => setIsSignup(true)}>
-              Don't have an account? Sign Up
-            </Button>
-          </form>
-        )}
+      <div className="bg-brand-cream/50 min-h-screen">
+        <div className="max-w-md mx-auto mt-16 p-8 bg-white rounded shadow mb-20">
+          <h2 className="text-2xl font-bold mb-4 text-brand-burgundy">{isSignup ? 'Sign Up' : 'Login to your profile'}</h2>
+          {isSignup ? (
+            <form onSubmit={handleSignup} className="space-y-4">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={signupForm.email}
+                onChange={e => setSignupForm({ ...signupForm, email: e.target.value })}
+                className="w-full border p-2 rounded bg-white"
+                required
+              />
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={signupForm.password}
+                onChange={e => setSignupForm({ ...signupForm, password: e.target.value })}
+                className="w-full border p-2 rounded bg-white"
+                required
+              />
+              <input
+                type="password"
+                name="confirm"
+                placeholder="Confirm Password"
+                value={signupForm.confirm}
+                onChange={e => setSignupForm({ ...signupForm, confirm: e.target.value })}
+                className="w-full border p-2 rounded bg-white"
+                required
+              />
+              {signupError && <div className="text-red-500">{signupError}</div>}
+              <Button type="submit" className="w-full bg-brand-burgundy text-white">Sign Up</Button>
+              <div className="text-center mt-4">
+                <span className="text-brand-burgundy/70">Already have an account? </span>
+                <button 
+                  type="button" 
+                  onClick={() => setIsSignup(false)}
+                  className="font-bold text-brand-burgundy hover:text-brand-burgundy/80 transition-colors"
+                >
+                  Log In
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={e => setForm({ ...form, [e.target.name]: e.target.value })}
+                className="w-full border p-2 rounded bg-white"
+                required
+              />
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={e => setForm({ ...form, [e.target.name]: e.target.value })}
+                className="w-full border p-2 rounded bg-white"
+                required
+              />
+              {error && <div className="text-red-500">{error}</div>}
+              <Button type="submit" className="w-full bg-brand-burgundy text-white">Login</Button>
+              <div className="text-center mt-4">
+                <span className="text-brand-burgundy/70">Don't have an account? </span>
+                <button 
+                  type="button" 
+                  onClick={() => setIsSignup(true)}
+                  className="font-bold text-brand-burgundy hover:text-brand-burgundy/80 transition-colors"
+                >
+                  Sign Up
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     );
   }
 
   // Show profile if logged in
   return (
-    <div className="bg-brand-cream min-h-screen py-10 md:py-16 font-body">
+    <div className="bg-brand-cream/50 min-h-screen py-10 md:py-16 font-body">
       <Card className="max-w-md mx-auto mt-16">
         <CardHeader>
           <div className="flex items-center gap-4">

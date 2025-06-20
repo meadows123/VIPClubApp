@@ -17,6 +17,9 @@ module.exports = {
     },
     extend: {
       colors: {
+        'brand-burgundy': '#800020',
+        'brand-burgundy-light': '#A71D2A',
+        'brand-cream': '#FDF7F1',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -50,9 +53,6 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        'brand-burgundy': '#5B0202',
-        'brand-cream': '#EFE9E1',
-        'brand-gold': '#D0A465',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -60,8 +60,8 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        heading: ["Georgia", "Times New Roman", "serif"],
-        body: ["Helvetica Neue", "Arial", "sans-serif"],
+        sans: ['Inter', 'sans-serif'],
+        heading: ['Playfair Display', 'serif'],
       },
       keyframes: {
         "accordion-down": {

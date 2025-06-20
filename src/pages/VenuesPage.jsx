@@ -6,24 +6,42 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import VenueCard from '@/components/VenueCard';
-import { allVenuesData, getLagosLocations, getVenueTypes, getVenueRatings, getCuisineTypes, getMusicGenresList, getVenueById } from '@/data/clubData';
+import { allVenuesData, getLagosLocations, getVenueTypes, getVenueRatings, getCuisineTypes, getMusicGenresList } from '@/data/clubData';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import VenueDetailPage from '@/pages/VenueDetailPage';
+import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/lib/supabase';
 
 const VenuesPage = () => {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const typeFromUrl = searchParams.get('type');
   
+  // Map URL type to venue type format
+  const mapTypeToVenueType = (type) => {
+    if (!type) return 'all';
+    // Map the URL parameters to the correct venue types
+    const typeMap = {
+      'restaurant': 'Restaurant',
+      'club': 'Club',
+      'lounge': 'Lounge'
+    };
+    return typeMap[type] || 'all';
+  };
+
   if (id) {
     return <VenueDetailPage />;
   }
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredVenues, setFilteredVenues] = useState(allVenuesData);
+  const [venues, setVenues] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   const [filters, setFilters] = useState({
     location: 'all',
-    venueType: 'all',
+    venueType: mapTypeToVenueType(typeFromUrl),
     rating: 'all',
     cuisineType: 'all',
     musicGenre: 'all',
@@ -34,6 +52,14 @@ const VenuesPage = () => {
   const ratings = getVenueRatings();
   const cuisineTypes = getCuisineTypes();
   const musicGenres = getMusicGenresList();
+
+  // Add effect to update filters when URL changes
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      venueType: mapTypeToVenueType(typeFromUrl)
+    }));
+  }, [typeFromUrl]);
 
   useEffect(() => {
     let results = allVenuesData;
@@ -66,6 +92,33 @@ const VenuesPage = () => {
     
     setFilteredVenues(results);
   }, [searchTerm, filters]);
+
+  useEffect(() => {
+    const fetchVenues = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('venues')
+          .select('*')
+          .eq('approval_status', 'approved')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setVenues(data);
+      } catch (error) {
+        console.error('Error fetching venues:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load venues. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVenues();
+  }, []);
 
   const handleFilterChange = (filterName, value) => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
@@ -176,9 +229,19 @@ const VenuesPage = () => {
 
             <div>
               <Label htmlFor="type-filter" className="text-sm font-body font-medium mb-1 block text-brand-burgundy/80 flex items-center"><Tag className="h-4 w-4 mr-1 text-brand-gold" />Venue Type</Label>
-              <Select value={filters.venueType} onValueChange={(value) => handleFilterChange('venueType', value)}>
-                <SelectTrigger id="type-filter" className="h-12 bg-brand-cream/50 border-brand-burgundy/30 text-brand-burgundy rounded-md"><SelectValue placeholder="Any Type" /></SelectTrigger>
-                <SelectContent><SelectItem value="all">Any Type</SelectItem>{venueTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
+              <Select 
+                value={filters.venueType} 
+                onValueChange={(value) => handleFilterChange('venueType', value)}
+              >
+                <SelectTrigger id="type-filter" className="h-12 bg-brand-cream/50 border-brand-burgundy/30 text-brand-burgundy rounded-md">
+                  <SelectValue placeholder="Any Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Type</SelectItem>
+                  {venueTypes.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             
@@ -190,21 +253,25 @@ const VenuesPage = () => {
               </Select>
             </div>
             
-            <div>
-              <Label htmlFor="cuisine-filter" className="text-sm font-body font-medium mb-1 block text-brand-burgundy/80 flex items-center"><Utensils className="h-4 w-4 mr-1 text-brand-gold" />Cuisine Type</Label>
-              <Select value={filters.cuisineType} onValueChange={(value) => handleFilterChange('cuisineType', value)}>
-                <SelectTrigger id="cuisine-filter" className="h-12 bg-brand-cream/50 border-brand-burgundy/30 text-brand-burgundy rounded-md"><SelectValue placeholder="Any Cuisine" /></SelectTrigger>
-                <SelectContent><SelectItem value="all">Any Cuisine</SelectItem>{cuisineTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-             <div>
-              <Label htmlFor="music-filter" className="text-sm font-body font-medium mb-1 block text-brand-burgundy/80 flex items-center"><Music2 className="h-4 w-4 mr-1 text-brand-gold" />Music Genre</Label>
-              <Select value={filters.musicGenre} onValueChange={(value) => handleFilterChange('musicGenre', value)}>
-                <SelectTrigger id="music-filter" className="h-12 bg-brand-cream/50 border-brand-burgundy/30 text-brand-burgundy rounded-md"><SelectValue placeholder="Any Genre" /></SelectTrigger>
-                <SelectContent><SelectItem value="all">Any Genre</SelectItem>{musicGenres.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-
+            {filters.venueType === 'Restaurant' && (
+              <div>
+                <Label htmlFor="cuisine-filter" className="text-sm font-body font-medium mb-1 block text-brand-burgundy/80 flex items-center"><Utensils className="h-4 w-4 mr-1 text-brand-gold" />Cuisine Type</Label>
+                <Select value={filters.cuisineType} onValueChange={(value) => handleFilterChange('cuisineType', value)}>
+                  <SelectTrigger id="cuisine-filter" className="h-12 bg-brand-cream/50 border-brand-burgundy/30 text-brand-burgundy rounded-md"><SelectValue placeholder="Any Cuisine" /></SelectTrigger>
+                  <SelectContent><SelectItem value="all">Any Cuisine</SelectItem>{cuisineTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            )}
+            
+            {(filters.venueType === 'Club' || filters.venueType === 'Lounge') && (
+              <div>
+                <Label htmlFor="music-filter" className="text-sm font-body font-medium mb-1 block text-brand-burgundy/80 flex items-center"><Music2 className="h-4 w-4 mr-1 text-brand-gold" />Music Genre</Label>
+                <Select value={filters.musicGenre} onValueChange={(value) => handleFilterChange('musicGenre', value)}>
+                  <SelectTrigger id="music-filter" className="h-12 bg-brand-cream/50 border-brand-burgundy/30 text-brand-burgundy rounded-md"><SelectValue placeholder="Any Genre" /></SelectTrigger>
+                  <SelectContent><SelectItem value="all">Any Genre</SelectItem>{musicGenres.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <Button onClick={resetFilters} variant="ghost" className="mt-6 text-sm text-brand-burgundy/70 hover:text-brand-gold">
             <FilterX className="h-4 w-4 mr-1" /> Reset All Filters

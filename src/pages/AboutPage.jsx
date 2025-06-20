@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Gem, Target, Zap } from 'lucide-react';
 
+const GOOGLE_MAPS_API_KEY = 'AIzaSyAPFBY4iFT_9N-O8yBdJpydgj3zxIxojfM';
+
 const AboutPage = () => {
   return (
     <div className="py-12 md:py-20 bg-gradient-to-b from-background to-background/90">

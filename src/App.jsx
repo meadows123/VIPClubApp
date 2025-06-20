@@ -1,67 +1,76 @@
 import React from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import HomePage from '@/pages/HomePage';
-import ClubsPage from '@/pages/ClubsPage';
-import ClubDetailPage from '@/pages/ClubDetailPage';
-import CheckoutPage from '@/pages/CheckoutPage';
-import AdminLayout from '@/components/admin/AdminLayout';
-import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
-import AdminBookingsPage from '@/pages/admin/AdminBookingsPage';
-import AdminReferralsPage from '@/pages/admin/AdminReferralsPage';
-import AdminSettingsPage from '@/pages/admin/AdminSettingsPage';
-import AdminTableLayoutPage from '@/pages/admin/AdminTableLayoutPage';
-import AdminQRCodePage from '@/pages/admin/AdminQRCodePage';
-import AboutPage from '@/pages/AboutPage';
-import ContactPage from '@/pages/ContactPage';
-import JoinVenuePage from '@/pages/JoinVenuePage';
-import UserProfilePage from '@/pages/UserProfilePage';
-import LoyaltyPage from '@/pages/LoyaltyPage';
-import ExplorePage from '@/pages/ExplorePage';
-import VenuesPage from '@/pages/VenuesPage';
-import EventsPage from '@/pages/EventsPage';
-import VenueDetailPage from '@/pages/VenueDetailPage';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from './components/ui/toaster';
+import Navigation from './components/Navigation';
+import Footer from './components/Footer';
+import LandingPage from './pages/LandingPage';
+import VenuesPage from './pages/VenuesPage';
+import VenueDetailPage from './pages/VenueDetailPage';
+import CheckoutPage from './pages/CheckoutPage';
+import VenueOwnerDashboard from './pages/venue-owner/VenueOwnerDashboard';
+import VenueOwnerLogin from './pages/venue-owner/VenueOwnerLogin';
+import VenueOwnerRegister from './pages/venue-owner/VenueOwnerRegister';
+import VenueOwnerPending from './pages/venue-owner/VenueOwnerPending';
+import VenueOwnerBookings from './pages/venue-owner/VenueOwnerBookings';
+import VenueOwnerTables from './pages/venue-owner/VenueOwnerTables';
+import VenueOwnerAnalytics from './pages/venue-owner/VenueOwnerAnalytics';
+import VenueApprovalsPage from './pages/admin/VenueApprovalsPage';
+import ProfilePage from './pages/ProfilePage';
+import BookingsPage from './pages/BookingsPage';
+import SettingsPage from './pages/SettingsPage';
+import ExplorePage from './pages/ExplorePage';
+import SupabaseTest from './components/SupabaseTest';
+import AuthTestPage from './pages/AuthTestPage';
+import EmailTest from './components/EmailTest';
+import MapTest from './components/MapTest';
+import { AuthProvider } from './contexts/AuthContext';
 
-function App() {
-  const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
-
+const App = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
-      {!isAdminRoute && <Navbar />}
-      <main className="flex-grow">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/clubs" element={<ClubsPage />} />
-          <Route path="/clubs/:id" element={<ClubDetailPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/join-venue" element={<JoinVenuePage />} />
-          <Route path="/checkout/:id" element={<CheckoutPage />} />
-          <Route path="/profile" element={<UserProfilePage />} />
-          <Route path="/loyalty" element={<LoyaltyPage />} />
-          <Route path="/events" element={<EventsPage />} />
-          <Route path="/venues" element={<VenuesPage />} />
-          <Route path="/venues/:id" element={<VenueDetailPage />} />
-          <Route path="/explore" element={<ExplorePage />} />
-          
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="dashboard" element={<AdminDashboardPage />} />
-            <Route path="bookings" element={<AdminBookingsPage />} />
-            <Route path="referrals" element={<AdminReferralsPage />} />
-            <Route path="settings" element={<AdminSettingsPage />} />
-            <Route path="table-layout" element={<AdminTableLayoutPage />} />
-            <Route path="qr-code" element={<AdminQRCodePage />} />
-          </Route>
-        </Routes>
-      </main>
-      {!isAdminRoute && <Footer />}
-      <Toaster />
-    </div>
+    <AuthProvider>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Navigation />
+        <main className="flex-grow">
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/venues" element={<VenuesPage />} />
+            <Route path="/venues/:id" element={<VenueDetailPage />} />
+            <Route path="/checkout/:id" element={<CheckoutPage />} />
+            <Route path="/explore" element={<ExplorePage />} />
+
+            {/* Customer Routes */}
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/bookings" element={<BookingsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+
+            {/* Venue Owner Routes */}
+            <Route path="/venue-owner/login" element={<VenueOwnerLogin />} />
+            <Route path="/venue-owner/register" element={<VenueOwnerRegister />} />
+            <Route path="/venue-owner/pending" element={<VenueOwnerPending />} />
+            <Route path="/venue-owner/dashboard" element={<VenueOwnerDashboard />} />
+            <Route path="/venue-owner/bookings" element={<VenueOwnerBookings />} />
+            <Route path="/venue-owner/tables" element={<VenueOwnerTables />} />
+            <Route path="/venue-owner/analytics" element={<VenueOwnerAnalytics />} />
+
+            {/* Admin Routes */}
+            <Route path="/admin/venue-approvals" element={<VenueApprovalsPage />} />
+
+            {/* Test Routes */}
+            <Route path="/test" element={<SupabaseTest />} />
+            <Route path="/auth-test" element={<AuthTestPage />} />
+            <Route path="/email-test" element={<EmailTest />} />
+            <Route path="/map-test" element={<MapTest />} />
+
+            {/* Fallback Route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+        <Footer />
+        <Toaster />
+      </div>
+    </AuthProvider>
   );
-}
+};
 
 export default App;
