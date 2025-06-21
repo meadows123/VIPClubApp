@@ -8,10 +8,18 @@ import { supabase } from '../../lib/supabase';
 import { Check, X, Clock, Building2, Mail, Phone, MapPin } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 
+const sendVenueEmail = async ({ to, subject, template, data }) => {
+  await fetch('https://<YOUR-SUPABASE-PROJECT-REF>.functions.supabase.co/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ to, subject, template, data })
+  });
+};
+
 const VenueApprovalsPage = () => {
   const [pendingVenues, setPendingVenues] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionReason, setRejectionReason] = useState({});
   const { toast: useToastToast } = useToast();
 
   useEffect(() => {
@@ -39,7 +47,7 @@ const VenueApprovalsPage = () => {
     }
   };
 
-  const handleApproval = async (venueId, approved) => {
+  const approveVenue = async (venue) => {
     try {
       setLoading(true);
 
@@ -47,46 +55,27 @@ const VenueApprovalsPage = () => {
       const { error: venueError } = await supabase
         .from('venues')
         .update({ 
-          status: approved ? 'approved' : 'rejected',
-          approved_at: approved ? new Date().toISOString() : null
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+          rejection_reason: null
         })
-        .eq('id', venueId);
+        .eq('id', venue.id);
 
       if (venueError) throw venueError;
 
-      // Get venue details for email
-      const { data: venue, error: fetchError } = await supabase
-        .from('venues')
-        .select('*, venue_owners(email, full_name)')
-        .eq('id', venueId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Send email notification
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            to: venue.venue_owners.email,
-            subject: approved ? 'Venue Approved!' : 'Venue Registration Update',
-            template: approved ? 'venue-approved' : 'venue-rejected',
-            data: {
-              ownerName: venue.venue_owners.full_name,
-              venueName: venue.name,
-              reason: approved ? null : 'Does not meet our requirements'
-            }
-          })
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to send email notification');
+      // Send approval email
+      if (venue.venue_owners.email && venue.venue_owners.full_name) {
+        await sendVenueEmail({
+          to: venue.venue_owners.email,
+          subject: 'Your Venue Has Been Approved!',
+          template: 'venue-approved',
+          data: {
+            ownerName: venue.venue_owners.full_name,
+            venueName: venue.name,
+          }
+        });
+      } else {
+        // TODO: Fetch owner info if not present on venue
       }
 
       // Refresh the list
@@ -94,13 +83,63 @@ const VenueApprovalsPage = () => {
 
       useToastToast({
         title: 'Success',
-        description: `Venue ${approved ? 'approved' : 'rejected'} successfully`,
+        description: 'Venue approved successfully',
       });
     } catch (error) {
-      console.error('Error handling venue approval:', error);
+      console.error('Error approving venue:', error);
       useToastToast({
         title: 'Error',
-        description: 'Failed to process venue approval',
+        description: 'Failed to approve venue',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const rejectVenue = async (venue) => {
+    try {
+      setLoading(true);
+
+      // Update venue status
+      const { error: venueError } = await supabase
+        .from('venues')
+        .update({ 
+          status: 'rejected',
+          rejection_reason: rejectionReason[venue.id] || null
+        })
+        .eq('id', venue.id);
+
+      if (venueError) throw venueError;
+
+      // Send rejection email
+      if (venue.venue_owners.email && venue.venue_owners.full_name) {
+        await sendVenueEmail({
+          to: venue.venue_owners.email,
+          subject: 'Your Venue Submission Was Not Approved',
+          template: 'venue-rejected',
+          data: {
+            ownerName: venue.venue_owners.full_name,
+            venueName: venue.name,
+            reason: rejectionReason[venue.id] || 'No reason provided',
+          }
+        });
+      } else {
+        // TODO: Fetch owner info if not present on venue
+      }
+
+      // Refresh the list
+      await fetchPendingVenues();
+
+      useToastToast({
+        title: 'Success',
+        description: 'Venue rejected successfully',
+      });
+    } catch (error) {
+      console.error('Error rejecting venue:', error);
+      useToastToast({
+        title: 'Error',
+        description: 'Failed to reject venue',
         variant: 'destructive',
       });
     } finally {
@@ -153,14 +192,21 @@ const VenueApprovalsPage = () => {
                     </div>
                     <div className="flex space-x-2">
                       <Button
-                        onClick={() => handleApproval(venue.id, true)}
+                        onClick={() => approveVenue(venue)}
                         className="bg-green-600 hover:bg-green-700"
                       >
                         <Check className="h-4 w-4 mr-2" />
                         Approve
                       </Button>
+                      <input
+                        type="text"
+                        placeholder="Rejection reason (optional)"
+                        value={rejectionReason[venue.id] || ''}
+                        onChange={(e) => setRejectionReason({ ...rejectionReason, [venue.id]: e.target.value })}
+                        className="border p-2 rounded"
+                      />
                       <Button
-                        onClick={() => handleApproval(venue.id, false)}
+                        onClick={() => rejectVenue(venue)}
                         variant="destructive"
                       >
                         <X className="h-4 w-4 mr-2" />

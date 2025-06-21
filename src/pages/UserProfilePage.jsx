@@ -195,6 +195,10 @@ const UserProfilePage = () => {
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </TabsTrigger>
+            <TabsTrigger value="member" className="data-[state=active]:bg-brand-gold data-[state=active]:text-brand-burgundy">
+              <span role="img" aria-label="VIP" className="h-4 w-4 mr-2">👑</span>
+              Member
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -312,6 +316,50 @@ const UserProfilePage = () => {
                   <h2 className="text-xl font-semibold mb-2">Referral Codes</h2>
                   <ReferralCodesSection user={user} />
                 </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="member">
+            <Card className="bg-white border-brand-burgundy/10">
+              <div className="p-6">
+                <h2 className="text-xl font-semibold mb-4">VIP Member Credit</h2>
+                <p className="mb-4 text-brand-burgundy/70">
+                  Deposit funds to your Eddy account and unlock exclusive VIP perks. 
+                  The more you deposit, the more power and privileges you get!
+                </p>
+                {/* Example: Show current credit and butler status */}
+                <div className="mb-6">
+                  <div className="text-lg font-bold">
+                    Credit Balance: <span className="text-brand-gold">${profile?.credit_balance?.toLocaleString() ?? 0}</span>
+                  </div>
+                  <div className="mt-2">
+                    {profile?.credit_balance >= 10000 ? (
+                      <div className="text-green-700 font-semibold flex items-center">
+                        <span role="img" aria-label="butler" className="mr-2">🕴️</span>
+                        You have a personal butler! Contact us for your VIP concierge service.
+                      </div>
+                    ) : (
+                      <div className="text-brand-burgundy/70">
+                        Deposit <span className="font-bold">${(10000 - (profile?.credit_balance ?? 0)).toLocaleString()}</span> more to unlock your personal butler!
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Deposit Form (placeholder, connect to Stripe for real payments) */}
+                <form className="space-y-4 max-w-xs" onSubmit={e => { e.preventDefault(); /* handle deposit */ }}>
+                  <label className="block text-sm font-medium text-brand-burgundy/70">Deposit Amount</label>
+                  <input
+                    type="number"
+                    min="100"
+                    step="100"
+                    className="w-full border p-2 rounded bg-white"
+                    placeholder="Enter amount (USD)"
+                    // value, onChange, etc.
+                  />
+                  <Button type="submit" className="w-full bg-brand-burgundy text-white">Deposit</Button>
+                </form>
+                {/* Optionally: Transaction history, perks list, etc. */}
               </div>
             </Card>
           </TabsContent>

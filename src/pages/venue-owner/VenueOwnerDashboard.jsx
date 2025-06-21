@@ -32,10 +32,32 @@ const VenueOwnerDashboard = () => {
   const [bookingTrends, setBookingTrends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [members, setMembers] = useState([]);
+  const venueId = venue?.id;
 
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('id, first_name, last_name, credit_balance, bookings!inner(venue_id)')
+        .eq('bookings.venue_id', venueId)
+        .gt('credit_balance', 0);
+
+      if (error) {
+        console.error('Error fetching members:', error);
+      } else {
+        // Deduplicate by user id
+        const unique = Array.from(new Map(data.map(m => [m.id, m])).values());
+        setMembers(unique);
+      }
+    };
+
+    if (venueId) fetchMembers();
+  }, [venueId]);
 
   const checkAuth = async () => {
     try {
@@ -429,6 +451,33 @@ const VenueOwnerDashboard = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </Card>
+
+        {/* Eddy Members */}
+        <Card className="bg-white border-brand-burgundy/10 mt-8">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Eddy Members</h2>
+            {members && members.length > 0 ? (
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left py-2">Name</th>
+                    <th className="text-left py-2">Credit Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {members.map(member => (
+                    <tr key={member.id}>
+                      <td className="py-2">{member.first_name} {member.last_name}</td>
+                      <td className="py-2">${member.credit_balance.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>No Eddy Members yet.</p>
+            )}
           </div>
         </Card>
       </div>

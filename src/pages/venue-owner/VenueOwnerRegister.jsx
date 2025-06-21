@@ -7,7 +7,7 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { toast } from '/src/components/ui/use-toast';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '/src/lib/supabase';
 import { useToast } from '../../components/ui/use-toast';
 
 const VenueOwnerRegister = () => {
@@ -33,6 +33,8 @@ const VenueOwnerRegister = () => {
       price_range: 'medium',
     };
   });
+
+  const ADMIN_EMAIL = "sales@oneeddy.com"; // Replace with your admin's email
 
   // Save form data to localStorage whenever it changes
   useEffect(() => {
@@ -159,6 +161,22 @@ const VenueOwnerRegister = () => {
         throw venueError;
       }
       console.log('Venue created successfully:', venue);
+
+      // Send admin notification email after successful venue creation
+      await fetch('https://agydpkzfucicraedllgl.functions.supabase.co/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: ADMIN_EMAIL,
+          subject: 'New Venue Submission Pending Approval',
+          template: 'admin-venue-submitted',
+          data: {
+            venueName: venue.name,
+            ownerName: formData.full_name,
+            ownerEmail: formData.email,
+          }
+        })
+      });
 
       toast({
         title: 'Registration Successful',

@@ -79,13 +79,40 @@ serve(async (req) => {
           <p>Hi${data?.email ? `, ${data.email}` : ''}!</p>
           <p>Thank you for signing up. We're excited to have you join our community.</p>
           <p>Start exploring and booking your favorite venues today!</p>
-          <p>Best regards,<br>The VIPClub Team</p>
+          <p>Best regards,<br>The Eddy Team</p>
+        `
+        break
+
+      case 'admin-venue-submitted':
+        html = `
+          <h1>New Venue Submission</h1>
+          <p>A new venue <strong>"${data.venueName}"</strong> has been submitted and is pending approval.</p>
+          <p>Submitted by: ${data.ownerName} (${data.ownerEmail})</p>
+          <p>Please review and approve or reject the venue in the admin dashboard.</p>
+          <p>Best regards,<br>The Eddy Team</p>
         `
         break
 
       default:
         throw new Error('Invalid template')
     }
+
+    const ADMIN_EMAIL = "admin@example.com"; // Replace with your admin's real email
+
+await fetch('https://agydpkzfucicraedllgl.supabase.co.functions.supabase.co/send-email', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    to: ADMIN_EMAIL,
+    subject: 'New Venue Submission Pending Approval',
+    template: 'admin-venue-submitted',
+    data: {
+      venueName: newVenue.name,
+      ownerName: userProfile.first_name + ' ' + userProfile.last_name, // or however you get the owner's name
+      ownerEmail: user.email, // or however you get the owner's email
+    }
+  })
+});
 
     console.log('Sending email...')
     await client.send({
@@ -121,4 +148,4 @@ serve(async (req) => {
   }
 }) 
 
-// mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN} 
+//mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN} 
