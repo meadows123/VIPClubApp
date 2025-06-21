@@ -64,11 +64,25 @@ const UserProfilePage = () => {
       return;
     }
     try {
-      const { error } = await signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: signupForm.email,
         password: signupForm.password,
       });
-      if (error) throw error;
+      if (signUpError) {
+        console.error('Sign up error:', signUpError);
+        setSignupError(signUpError.message);
+        return;
+      }
+
+      const userId = signUpData.user.id;
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert([{ id: userId, ... }]);
+      if (profileError) {
+        console.error('Insert error:', profileError);
+        setSignupError(profileError.message);
+        return;
+      }
     } catch (error) {
       setSignupError(error.message);
     }

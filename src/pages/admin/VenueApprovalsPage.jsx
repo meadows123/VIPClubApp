@@ -9,7 +9,7 @@ import { Check, X, Clock, Building2, Mail, Phone, MapPin } from 'lucide-react';
 import { useToast } from '../../components/ui/use-toast';
 
 const sendVenueEmail = async ({ to, subject, template, data }) => {
-  await fetch('https://<YOUR-SUPABASE-PROJECT-REF>.functions.supabase.co/send-email', {
+  await fetch('https://agydpkzfucicraedllgl.functions.supabase.co/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ to, subject, template, data })
@@ -27,24 +27,13 @@ const VenueApprovalsPage = () => {
   }, []);
 
   const fetchPendingVenues = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('venues')
-        .select('*')
-        .eq('status', 'pending');
-
-      if (error) throw error;
-      setPendingVenues(data);
-    } catch (error) {
-      console.error('Error fetching pending venues:', error);
-      useToastToast({
-        title: 'Error',
-        description: 'Failed to fetch pending venues',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('venues')
+      .select(`*, venue_owners:owner_id (full_name, email)`)
+      .eq('status', 'pending');
+    if (!error) setPendingVenues(data);
+    setLoading(false);
   };
 
   const approveVenue = async (venue) => {
@@ -64,7 +53,7 @@ const VenueApprovalsPage = () => {
       if (venueError) throw venueError;
 
       // Send approval email
-      if (venue.venue_owners.email && venue.venue_owners.full_name) {
+      if (venue.venue_owners?.email && venue.venue_owners?.full_name) {
         await sendVenueEmail({
           to: venue.venue_owners.email,
           subject: 'Your Venue Has Been Approved!',
@@ -113,7 +102,7 @@ const VenueApprovalsPage = () => {
       if (venueError) throw venueError;
 
       // Send rejection email
-      if (venue.venue_owners.email && venue.venue_owners.full_name) {
+      if (venue.venue_owners?.email && venue.venue_owners?.full_name) {
         await sendVenueEmail({
           to: venue.venue_owners.email,
           subject: 'Your Venue Submission Was Not Approved',
